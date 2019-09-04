@@ -49,7 +49,10 @@ const GreenBread = ({ ...extraProps }) => (
 
 class App extends React.Component {
   componentDidMount() {
-    const { makeToast } = this.props;
+    const {
+      makeToast,
+      consumeToast,
+    } = this.props;
     setTimeout(
       () => makeToast(
         RedBread,
@@ -65,7 +68,10 @@ class App extends React.Component {
     setTimeout(
       () => makeToast(
         GreenBread,
-      ),
+      )
+        .then(
+          consumeToast,
+        ),
       3000,
     );
   }

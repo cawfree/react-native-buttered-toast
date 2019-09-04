@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import PropTypes from 'prop-types';
 import { merge as mergeDeep } from 'lodash';
+import uuidv4 from 'uuid/v4';
 
 import Butter from './Butter';
 
@@ -66,7 +67,36 @@ class ButteredToastProvider extends React.Component {
     dimensions: [],
     width: undefined,
     height: undefined,
+    pendingTasks: [],
+    uuids: [],
   };
+  consumeToast = toastId => Promise
+    .resolve()
+    .then(
+      () => {
+        const { uuids } = this.state;
+        const index = uuids
+          .indexOf(
+            toastId,
+          );
+        if (index < 0) {
+          return Promise
+            .reject(
+              new Error(
+                `Attempted to consume unrecognized toastId "${JSON.stringify(
+                  toastId,
+                )}".`,
+              ),
+            );
+        }
+        return index;
+      },
+    )
+    .then(
+      (index) => {
+        Alert.alert(index);
+      },
+    );
   makeToast = (Bread, options = defaultOptions) => Promise
     .resolve()
     .then(
@@ -148,6 +178,10 @@ class ButteredToastProvider extends React.Component {
                 height,
               },
             ],
+            uuids: [
+              ...this.state.uuids,
+              uuidv4(),
+            ],
           },
           () => resolve(
             {
@@ -222,7 +256,8 @@ class ButteredToastProvider extends React.Component {
     )
     .then(
       () => {
-        //Alert.alert('got '+this.state.animValues.length);
+        const { uuids } = this.state;
+        return uuids[uuids.length - 1];
       },
     );
   onLayout = ({ nativeEvent: { layout: { width, height } } }) => {
@@ -245,11 +280,15 @@ class ButteredToastProvider extends React.Component {
       width,
       height,
     } = this.state;
-    const { makeToast } = this;
+    const {
+      makeToast,
+      consumeToast,
+    } = this;
     return (
       <ButteredToastContext.Provider
         value={{
           makeToast,
+          consumeToast,
         }}
       >
         {children}
