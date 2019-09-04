@@ -194,29 +194,6 @@ class ButteredToastProvider extends React.Component {
             ],
           )
           .start();
-        //return new Promise(
-        //  resolve => Animated
-        //    .parallel(
-        //      [
-        //        ...animValues
-        //          .map(
-        //            (animValue, i) => Animated
-        //              .timing(
-        //                animValue,
-        //                {
-        //                  toValue: {
-        //                    x: width - (dimensions[i] + paddingRight),
-        //                    y: targets[i],
-        //                  },
-        //                  duration: 1000, // TODO: props
-        //                  useNativeDriver: true,
-        //                },
-        //              ),
-        //          ),
-        //      ],
-        //    )
-        //    .start(resolve),
-        //);
       },
     );
   makeToast = (Bread, options = defaultOptions) => Promise
@@ -259,6 +236,7 @@ class ButteredToastProvider extends React.Component {
               y: height,
             },
           );
+        const toastId = uuidv4();
         return new Promise(
           resolve => this.setState(
             {
@@ -270,6 +248,9 @@ class ButteredToastProvider extends React.Component {
                   animValue={animValue}
                 >
                   <Bread
+                    consumeToast={() => this.consumeToast(
+                      toastId,
+                    )}
                     onLayout={({ nativeEvent: { layout: { width, height } }}) => resolve(
                       {
                         width,
@@ -286,6 +267,10 @@ class ButteredToastProvider extends React.Component {
                 ...this.state.animValues,
                 animValue,
               ],
+              uuids: [
+                ...this.state.uuids,
+                toastId,
+              ],
             },
           ),
         );
@@ -301,11 +286,7 @@ class ButteredToastProvider extends React.Component {
                 width,
                 height,
               },
-            ],
-            uuids: [
-              ...this.state.uuids,
-              uuidv4(),
-            ],
+            ], 
           },
           () => resolve(
             {

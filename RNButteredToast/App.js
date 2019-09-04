@@ -14,6 +14,7 @@ import {
   View,
   Text,
   StatusBar,
+  Alert,
 } from 'react-native';
 
 import {
@@ -25,23 +26,25 @@ import {
 
 import ButteredToastProvider, { withButter } from './components/ButteredToastProvider';
 
-const RedBread = ({ ...extraProps }) => (
-  <View
-    {...extraProps}
-    style={{
-      width: 100,
-      height: 100,
-      backgroundColor: 'red',
-    }}
-  />
-);
+const RedBread = ({ consumeToast, ...extraProps }) => {
+  return (
+    <View
+      {...extraProps}
+      style={{
+        width: 200,
+        height: 100,
+        backgroundColor: 'red',
+      }}
+    />
+  );
+};
 
 const GreenBread = ({ ...extraProps }) => (
   <View
     {...extraProps}
     style={{
       width: 100,
-      height: 100,
+      height: 200,
       backgroundColor: 'green',
     }}
   />
