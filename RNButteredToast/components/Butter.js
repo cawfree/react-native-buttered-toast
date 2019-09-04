@@ -33,7 +33,8 @@ class Butter extends React.Component {
     };
   }
   onStartShouldSetPanResponder = (e, gestureState) => {
-    return true;
+    // TODO:
+    return false;
   };
   onPanResponderGrant = (e, gestureState) => {
   };
