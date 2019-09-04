@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Easing,
   StyleSheet,
   View,
   Animated,
@@ -25,8 +26,9 @@ const styles = StyleSheet
 const defaultOptions = {
   containerStyle: styles.ContainerStyle,
   durations: {
-    show: 100,
+    show: 1000,
   },
+  easing: Easing.bounce,
 };
 
 const ButteredToastContext = React
@@ -67,7 +69,6 @@ class ButteredToastProvider extends React.Component {
     dimensions: [],
     width: undefined,
     height: undefined,
-    pendingTasks: [],
     uuids: [],
   };
   consumeToast = toastId => Promise
@@ -94,7 +95,128 @@ class ButteredToastProvider extends React.Component {
     )
     .then(
       (index) => {
-        Alert.alert(index);
+        const {
+          paddingRight,
+        } = this.props;
+        const {
+          width,
+          children,
+          animValues,
+          dimensions,
+          uuids,
+        } = this.state;
+        const animValue = animValues[index];
+        const { width: viewWidth } = dimensions[index];
+        // XXX: assume we've done some nice animation
+        return Promise
+          .resolve(index);
+        //const shouldAnimateLeft = animValue.__getValue().x < (width - (viewWidth + paddingRight));
+        //return new Promise(
+        //  resolve => Animated
+        //    .timing(
+        //      animValue,
+        //      {
+        //        toValue: {
+        //          x: shouldAnimateLeft ? 0 : 400,
+        //          y: 100,
+        //        },
+        //        duration: 1000,
+        //        useNativeDriver: true,
+        //      },
+        //    )
+        //    .start(resolve),
+        //);
+      },
+    )
+    .then(
+      (index) => new Promise(
+        resolve => this.setState(
+          {
+             children: this.state.children
+               .filter((_, i) => i !== index),
+             animValues: this.state.animValues
+               .filter((_, i) => i !== index),
+             dimensions: this.state.dimensions
+               .filter((_, i) => i !== index),
+             uuids: this.state.uuids
+               .filter((_, i) => i !== index),
+          },
+          resolve,
+        ),
+      ),
+    )
+    .then(
+      () => {
+        const {
+          paddingRight,
+          paddingBottom,
+          paddingBetween,
+          duration,
+          easing,
+        } = this.props;
+        const {
+          width,
+          animValues,
+          dimensions,
+          height,
+        } = this.state;
+        const targets = dimensions
+          .slice()
+          .reverse()
+          .reduce(
+            (arr, { height }, i) => (
+              [
+                ...arr,
+                ((arr[i - 1] || (-1 * paddingBottom)) - height) - ((!!arr[i - 1]) ? paddingBetween : 0),
+              ]
+            ),
+            [],
+          )
+          .reverse();
+        Animated
+          .parallel(
+            [
+              ...animValues
+                .map(
+                  (animValue, i) => Animated.timing(
+                    animValue,
+                    {
+                      toValue: {
+                        x: width - (dimensions[i].width + paddingRight),
+                        y: targets[i] + height,
+                      },
+                      duration,
+                      useNativeDriver: true,
+                      easing,
+                    },
+                  ),
+                ),
+            ],
+          )
+          .start();
+        //return new Promise(
+        //  resolve => Animated
+        //    .parallel(
+        //      [
+        //        ...animValues
+        //          .map(
+        //            (animValue, i) => Animated
+        //              .timing(
+        //                animValue,
+        //                {
+        //                  toValue: {
+        //                    x: width - (dimensions[i] + paddingRight),
+        //                    y: targets[i],
+        //                  },
+        //                  duration: 1000, // TODO: props
+        //                  useNativeDriver: true,
+        //                },
+        //              ),
+        //          ),
+        //      ],
+        //    )
+        //    .start(resolve),
+        //);
       },
     );
   makeToast = (Bread, options = defaultOptions) => Promise
@@ -127,6 +249,7 @@ class ButteredToastProvider extends React.Component {
       ({
         containerStyle,
         durations,
+        easing,
       }) => {
         const { height } = this.state;
         const animValue = new Animated
@@ -153,6 +276,7 @@ class ButteredToastProvider extends React.Component {
                         height,
                         animValue,
                         durations,
+                        easing,
                       },
                     )}
                   />
@@ -168,7 +292,7 @@ class ButteredToastProvider extends React.Component {
       },
     )
     .then(
-      ({ width, height, animValue, durations }) => new Promise(
+      ({ width, height, animValue, durations, easing }) => new Promise(
         resolve => this.setState(
           {
             dimensions: [
@@ -187,13 +311,14 @@ class ButteredToastProvider extends React.Component {
             {
               animValue,
               durations,
+              easing,
             },
           )
         ),
       ),
     )
     .then(
-      ({ animValue, durations }) => {
+      ({ animValue, durations, easing }) => {
         const {
           paddingBottom,
           paddingRight,
@@ -244,6 +369,7 @@ class ButteredToastProvider extends React.Component {
                         },
                         useNativeDriver: true,
                         duration: showDuration,
+                        easing,
                       },
                     ),
                 ),
@@ -308,12 +434,16 @@ ButteredToastProvider.propTypes = {
   paddingBottom: PropTypes.number,
   paddingRight: PropTypes.number,
   paddingBetween: PropTypes.number,
+  duration: PropTypes.number,
+  easing: PropTypes.func,
 };
 
 ButteredToastProvider.defaultProps = {
   paddingBottom: 30,
   paddingRight: 10,
   paddingBetween: 10,
+  duration: 1000,
+  easing: Easing.bounce,
 };
 
 export default ButteredToastProvider;
