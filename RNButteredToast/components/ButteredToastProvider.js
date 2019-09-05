@@ -17,8 +17,7 @@ const styles = StyleSheet
   .create(
     {
       containerStyle: {
-        //width: Dimensions.get('window').width,
-        //flex: 1,
+        
       },
     },
   );
@@ -27,6 +26,8 @@ const makeOptions = {
   containerStyle: styles.ContainerStyle,
   duration: 1000,
   easing: Easing.bounce,
+  // XXX: By default, toasts must be dismissed.
+  lifespan: -1,
 };
 
 const consumeOptions = {
@@ -312,6 +313,7 @@ class ButteredToastProvider extends React.Component {
           containerStyle,
           duration,
           easing,
+          lifespan,
         }) => {
           const { height } = this.state;
           const animValue = new Animated
@@ -343,6 +345,7 @@ class ButteredToastProvider extends React.Component {
                           animValue,
                           duration,
                           easing,
+                          lifespan,
                         },
                       )}
                     />
@@ -362,7 +365,7 @@ class ButteredToastProvider extends React.Component {
         },
       )
       .then(
-        ({ width, height, animValue, duration, easing }) => new Promise(
+        ({ width, height, animValue, duration, easing, lifespan }) => new Promise(
           resolve => this.setState(
             {
               dimensions: [
@@ -378,13 +381,14 @@ class ButteredToastProvider extends React.Component {
                 animValue,
                 duration,
                 easing,
+                lifespan,
               },
             )
           ),
         ),
       )
       .then(
-        ({ animValue, duration, easing }) => {
+        ({ animValue, duration, easing, lifespan }) => {
           const {
             paddingBottom,
             paddingRight,
@@ -439,13 +443,14 @@ class ButteredToastProvider extends React.Component {
               ]
                 .filter(e => !!e),
             )
-              .start(resolve),
+              .start(() => resolve(lifespan)),
           );
         },
       )
       .then(
-        () => {
+        (lifespan) => {
           const { uuids } = this.state;
+          Alert.alert('lifespan is '+lifespan);
           return uuids[uuids.length - 1];
         },
       );
