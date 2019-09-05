@@ -8,6 +8,7 @@
 
 import React, { Fragment, useEffect } from 'react';
 import {
+  Button,
   SafeAreaView,
   StyleSheet,
   ScrollView,
@@ -17,6 +18,8 @@ import {
   Alert,
   TouchableOpacity,
   Animated,
+  Image,
+  TextInput,
 } from 'react-native';
 
 import {
@@ -28,30 +31,92 @@ import {
 
 import ButteredToastProvider, { withButter } from './components/ButteredToastProvider';
 
-const RedBread = ({ consumeToast, ...extraProps }) => {
-  return (
-    <TouchableOpacity
-      {...extraProps}
+const NotificationBread = ({ title, description, image, consumeToast, ...extraProps }) => (
+  <View
+    {...extraProps}
+    style={{
+      borderRadius: 5,
+      backgroundColor: 'white',
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderColor: 'lightgrey',
+      maxWidth: 300,
+      flex: 2,
+    }}
+  >
+    <Text
+      style={{
+        fontSize: 20,
+        margin: 5,
+      }}
+      children={title}
+    />
+    {(!!image) && (
+      <Image
+        source={{
+          uri: image,
+        }}
+        style={{
+          width: 300,
+          height: 150,
+        }}
+      />
+    )}
+    <Text
+      style={{
+        fontSize: 16,
+        margin: 5,
+      }}
+      children={description}
+    />
+  </View>
+);
+
+const InputToast = ({ consumeToast, ...extraProps }) => (
+  <View
+    {...extraProps}
+    style={{
+      padding: 5,
+      backgroundColor: 'white',
+      borderWidth: 1,
+      borderColor: 'lightgrey',
+    }}
+  >
+    <Button
+      title="Dismiss"
       onPress={consumeToast}
+    />
+  </View>
+);
+
+const ProgressToast = ({ animLifespan, ...extraProps }) => (
+  <View
+    {...extraProps}
+    style={{
+      padding: 5,
+      backgroundColor: 'white',
+      borderWidth: 1,
+      borderColor: 'lightgrey',
+    }}
+  >
+    <Animated.View
       style={{
         width: 200,
-        height: 100,
+        height: 10,
+        borderRadius: 5,
         backgroundColor: 'red',
+        opacity: Animated.subtract(
+          1,
+          animLifespan,
+        ),
+        transform: [
+          {
+            scaleX: animLifespan,
+          },  
+        ],
       }}
     />
-  );
-};
-
-const GreenBread = ({ consumeToast, ...extraProps }) => (
-  <TouchableOpacity
-    {...extraProps}
-    onPress={consumeToast}
-    style={{
-      width: 100,
-      height: 200,
-      backgroundColor: 'green',
-    }}
-  />
+  </View>
 );
 
 const AutoConsumingBread = ({ animLifespan, ...extraProps }) => (
@@ -76,16 +141,23 @@ class App extends React.Component {
       consumeToast,
     } = this.props;
     makeToast(
-      RedBread,
+      ({ ...extraProps }) => (
+        <NotificationBread
+          {...extraProps}
+          title="🍞 Welcome to Buttered Toast!"
+          image="https://i.pinimg.com/originals/31/8a/80/318a80fb5c4bba7b8ac8754e63398c07.jpg"
+          description="A simple, configurable manager for your toast notifications. Any arbitrary React component can be displayed as a notification."
+        />
+      ),
+    );
+    makeToast(
+      InputToast,
     )
       .then(() => makeToast(
-        AutoConsumingBread,
+        ProgressToast,
         {
-          lifespan: 3000,
+          lifespan: 1000,
         },
-      ))
-      .then(() => makeToast(
-        GreenBread,
       ));
   }
   render() {

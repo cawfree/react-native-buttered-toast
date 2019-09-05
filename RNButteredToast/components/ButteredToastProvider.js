@@ -23,8 +23,8 @@ const styles = StyleSheet
   );
 
 const makeOptions = {
-  containerStyle: styles.ContainerStyle,
-  duration: 1000,
+  containerStyle: styles.containerStyle,
+  duration: 1200,
   easing: Easing.bounce,
   // XXX: By default, toasts must be dismissed.
   lifespan: -1,
@@ -550,7 +550,7 @@ ButteredToastProvider.defaultProps = {
   paddingBottom: 30,
   paddingRight: 10,
   paddingBetween: 10,
-  duration: 1000,
+  duration: 500,
   easing: Easing.bounce,
 };
 
