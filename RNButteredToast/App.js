@@ -15,6 +15,7 @@ import {
   Text,
   StatusBar,
   Alert,
+  TouchableOpacity,
 } from 'react-native';
 
 import {
@@ -28,8 +29,9 @@ import ButteredToastProvider, { withButter } from './components/ButteredToastPro
 
 const RedBread = ({ consumeToast, ...extraProps }) => {
   return (
-    <View
+    <TouchableOpacity
       {...extraProps}
+      onPress={consumeToast}
       style={{
         width: 200,
         height: 100,
@@ -39,9 +41,10 @@ const RedBread = ({ consumeToast, ...extraProps }) => {
   );
 };
 
-const GreenBread = ({ ...extraProps }) => (
-  <View
+const GreenBread = ({ consumeToast, ...extraProps }) => (
+  <TouchableOpacity
     {...extraProps}
+    onPress={consumeToast}
     style={{
       width: 100,
       height: 200,

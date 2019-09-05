@@ -17,17 +17,15 @@ const styles = StyleSheet
   .create(
     {
       containerStyle: {
-        width: Dimensions.get('window').width,
-        flex: 1,
+        //width: Dimensions.get('window').width,
+        //flex: 1,
       },
     },
   );
 
-const defaultOptions = {
+const makeOptions = {
   containerStyle: styles.ContainerStyle,
-  durations: {
-    show: 1000,
-  },
+  duration: 1000,
   easing: Easing.bounce,
 };
 
@@ -239,7 +237,7 @@ class ButteredToastProvider extends React.Component {
       shouldConsumeToast,
     );
   };
-  makeToast = (Bread, options = defaultOptions) => {
+  makeToast = (Bread, options = makeOptions) => {
     const shouldMakeToast = () => Promise
       .resolve()
       .then(
@@ -262,14 +260,14 @@ class ButteredToastProvider extends React.Component {
           }
           return mergeDeep(
             options,
-            defaultOptions,
+            makeOptions,
           );
         },
       )
       .then(
         ({
           containerStyle,
-          durations,
+          duration,
           easing,
         }) => {
           const { height } = this.state;
@@ -300,7 +298,7 @@ class ButteredToastProvider extends React.Component {
                           width,
                           height,
                           animValue,
-                          durations,
+                          duration,
                           easing,
                         },
                       )}
@@ -321,7 +319,7 @@ class ButteredToastProvider extends React.Component {
         },
       )
       .then(
-        ({ width, height, animValue, durations, easing }) => new Promise(
+        ({ width, height, animValue, duration, easing }) => new Promise(
           resolve => this.setState(
             {
               dimensions: [
@@ -335,7 +333,7 @@ class ButteredToastProvider extends React.Component {
             () => resolve(
               {
                 animValue,
-                durations,
+                duration,
                 easing,
               },
             )
@@ -343,7 +341,7 @@ class ButteredToastProvider extends React.Component {
         ),
       )
       .then(
-        ({ animValue, durations, easing }) => {
+        ({ animValue, duration, easing }) => {
           const {
             paddingBottom,
             paddingRight,
@@ -355,9 +353,6 @@ class ButteredToastProvider extends React.Component {
             animValues,
             dimensions,
           } = this.state;
-          const {
-            show: showDuration,
-          } = durations;
           const { width: viewWidth, height: viewHeight } = dimensions[dimensions.length - 1];
           animValue
             .setValue(
@@ -393,7 +388,7 @@ class ButteredToastProvider extends React.Component {
                             y: targets[i] + height,
                           },
                           useNativeDriver: true,
-                          duration: showDuration,
+                          duration,
                           easing,
                         },
                       ),
