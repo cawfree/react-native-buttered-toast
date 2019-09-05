@@ -132,8 +132,8 @@ class ButteredToastProvider extends React.Component {
       .resolve()
       .then(
         () => mergeDeep(
+          { ...consumeOptions },
           options || {},
-          consumeOptions,
         ),
       )
       .then(
@@ -303,8 +303,8 @@ class ButteredToastProvider extends React.Component {
               );
           }
           return mergeDeep(
-            options,
-            makeOptions,
+            { ...makeOptions },
+            options || {},
           );
         },
       )
@@ -450,7 +450,6 @@ class ButteredToastProvider extends React.Component {
       .then(
         (lifespan) => {
           const { uuids } = this.state;
-          Alert.alert('lifespan is '+lifespan);
           return uuids[uuids.length - 1];
         },
       );

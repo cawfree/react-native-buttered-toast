@@ -64,6 +64,9 @@ class App extends React.Component {
     )
       .then(() => makeToast(
         GreenBread,
+        {
+          lifespan: 3000,
+        },
       ))
       .then(() => makeToast(
         GreenBread,
