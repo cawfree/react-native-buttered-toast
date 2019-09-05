@@ -29,6 +29,11 @@ const makeOptions = {
   easing: Easing.bounce,
 };
 
+const consumeOptions = {
+  duration: 500,
+  easing: Easing.cubic,
+};
+
 const ButteredToastContext = React
   .createContext(
     null,
@@ -121,11 +126,17 @@ class ButteredToastProvider extends React.Component {
       },
     );
   };
-  consumeToast = (toastId) => {
+  consumeToast = (toastId, options = consumeOptions) => {
     const shouldConsumeToast = () => Promise
       .resolve()
       .then(
-        () => {
+        () => mergeDeep(
+          options || {},
+          consumeOptions,
+        ),
+      )
+      .then(
+        ({ duration, easing }) => {
           const { uuids } = this.state;
           const index = uuids
             .indexOf(
@@ -141,26 +152,58 @@ class ButteredToastProvider extends React.Component {
                 ),
               );
           }
-          return index;
+          return {
+            index,
+            duration,
+            easing,
+          };
         },
       )
       .then(
-        (index) => {
+        ({ index, duration, easing }) => {
           const {
             paddingRight,
+            paddingBottom,
+            paddingBetween,
           } = this.props;
           const {
             width,
+            height,
             children,
             animValues,
             dimensions,
             uuids,
           } = this.state;
           const animValue = animValues[index];
-          const { width: viewWidth } = dimensions[index];
-          // XXX: assume we've done some nice animation
-          return Promise
-            .resolve(index);
+          const {
+            width: viewWidth,
+            height: viewHeight,
+          } = dimensions[index];
+          const y = dimensions
+            .filter((_, i) => i > index)
+            .reduce(
+              (n, { height }) => (
+                (height + n) + paddingBetween
+              ),
+              paddingBottom,
+            );
+          return new Promise(
+            resolve => Animated
+              .timing(
+                animValue,
+                {
+                  toValue: {
+                    x: width,
+                    y: (height - y) - viewHeight,
+                  },
+                  duration,
+                  easing,
+                  useNativeDriver: true,
+                },
+              )
+              .start(resolve),
+          )
+            .then(() => index);
         },
       )
       .then(
