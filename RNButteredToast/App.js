@@ -56,33 +56,15 @@ class App extends React.Component {
       makeToast,
       consumeToast,
     } = this.props;
-    setTimeout(
-      () => makeToast(
-        RedBread,
-      ),
-      1000,
-    );
-    setTimeout(
-      () => makeToast(
+    makeToast(
+      RedBread,
+    )
+      .then(() => makeToast(
         GreenBread,
-      ),
-      3000,
-    );
-    setTimeout(
-      () => makeToast(
+      ))
+      .then(() => makeToast(
         GreenBread,
-      )
-        .then(
-          toastId => new Promise(
-            resolve => setTimeout(
-              () => consumeToast(toastId)
-                .then(resolve),
-              2000,
-            ),
-          ),
-        ),
-      5000,
-    );
+      ));
   }
   render() {
     return (

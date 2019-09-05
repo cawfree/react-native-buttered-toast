@@ -70,7 +70,58 @@ class ButteredToastProvider extends React.Component {
     width: undefined,
     height: undefined,
     uuids: [],
+    processing: false,
     pendingTasks: [],
+  };
+  processPendingTasks = (extraTask) => {
+    const { 
+      width,
+      height,
+      processing,
+    } = this.state;
+    return new Promise(
+      (resolve) => {
+        if (!!extraTask) {
+          Object.assign(
+            this.state,
+            {
+              pendingTasks: [
+                ...this.state.pendingTasks,
+                () => extraTask()
+                  .then(resolve),
+              ],
+            },
+          );
+        }
+        if (!processing && ButteredToastProvider.hasLayout(width, height)) {
+          const [
+            nextTask,
+            ...extraTasks
+          ] = this.state.pendingTasks;
+          const hasNextTask = (!!nextTask);
+          Object.assign(
+            this.state,
+            {
+              processing: hasNextTask,
+              pendingTasks: extraTasks,
+            },
+          );
+          if (hasNextTask) {
+            return nextTask()
+              .then(() => {
+                Object.assign(
+                  this.state,
+                  {
+                    processing: false,
+                  },
+                );
+                return this.processPendingTasks(null);
+              });
+          }
+          return resolve();
+        }
+      },
+    );
   };
   consumeToast = (toastId) => {
     const shouldConsumeToast = () => Promise
@@ -112,22 +163,6 @@ class ButteredToastProvider extends React.Component {
           // XXX: assume we've done some nice animation
           return Promise
             .resolve(index);
-          //const shouldAnimateLeft = animValue.__getValue().x < (width - (viewWidth + paddingRight));
-          //return new Promise(
-          //  resolve => Animated
-          //    .timing(
-          //      animValue,
-          //      {
-          //        toValue: {
-          //          x: shouldAnimateLeft ? 0 : 400,
-          //          y: 100,
-          //        },
-          //        duration: 1000,
-          //        useNativeDriver: true,
-          //      },
-          //    )
-          //    .start(resolve),
-          //);
         },
       )
       .then(
@@ -200,7 +235,9 @@ class ButteredToastProvider extends React.Component {
           );
         },
       );
-    return shouldConsumeToast();
+    return this.processPendingTasks(
+      shouldConsumeToast,
+    );
   };
   makeToast = (Bread, options = defaultOptions) => {
     const shouldMakeToast = () => Promise
@@ -374,14 +411,24 @@ class ButteredToastProvider extends React.Component {
           return uuids[uuids.length - 1];
         },
       );
-    return shouldMakeToast();
+    return this.processPendingTasks(
+      shouldMakeToast,
+    );
   };
   onLayout = ({ nativeEvent: { layout: { width, height } } }) => {
+    const shouldInit = !ButteredToastProvider
+      .hasLayout(
+        this.state.width,
+        this.state.height,
+      );
     return this.setState(
       {
         width,
         height,
-      }
+      },
+      () => (!!shouldInit) && this.processPendingTasks(
+        null,
+      ),
     );
   };
   render() {
