@@ -87,6 +87,7 @@ class ButteredToastProvider extends React.Component {
       width,
       height,
       processing,
+      dragging,
     } = this.state;
     return new Promise(
       (resolve) => {
@@ -102,7 +103,7 @@ class ButteredToastProvider extends React.Component {
             },
           );
         }
-        if (!processing && ButteredToastProvider.hasLayout(width, height)) {
+        if (!dragging && !processing && ButteredToastProvider.hasLayout(width, height)) {
           const [
             nextTask,
             ...extraTasks
@@ -287,7 +288,37 @@ class ButteredToastProvider extends React.Component {
     );
   };
   requestDrag = (toastId) => {
-    return true;
+    const {
+      processing,
+      dragging,
+    } = this.state;
+    const allowDrag = !processing && !dragging;
+    if (allowDrag) {
+      Object.assign(
+        this.state,
+        {
+          dragging: true,
+        },
+      );
+    }
+    return allowDrag;
+  };
+  finishDrag = (toastId, shouldConsume) => {
+    Object.assign(
+      this.state,
+      {
+        dragging: false,
+      },
+    );
+    if (shouldConsume) {
+      return this.consumeToast(
+        toastId,
+        null, // TODO: some dismiss options
+      );
+    }
+    return this.processPendingTasks(
+      null,
+    );
   };
   makeToast = (Bread, options = makeOptions) => {
     const shouldMakeToast = () => Promise
@@ -334,14 +365,11 @@ class ButteredToastProvider extends React.Component {
             );
           const animLifespan = ButteredToastProvider.hasLifespan(lifespan) ? new Animated.Value(0) : null;
           const toastId = uuidv4();
-          const shouldRequestDrag = () => {
-            if (dismissable) {
-              return this.requestDrag(
-                toastId,
-              );
-            }
-            return false;
-          };
+          const shouldRequestDrag = () => (!!dismissable) && this.requestDrag(toastId);
+          const shouldFinishDrag = shouldConsume => this.finishDrag(
+            toastId,
+            shouldConsume,
+          );
           return new Promise(
             resolve => this.setState(
               {
@@ -352,6 +380,7 @@ class ButteredToastProvider extends React.Component {
                     containerStyle={containerStyle}
                     animValue={animValue}
                     requestDrag={shouldRequestDrag}
+                    finishDrag={shouldFinishDrag}
                   >
                     <Bread
                       animLifespan={animLifespan}

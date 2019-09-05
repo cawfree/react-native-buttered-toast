@@ -5,20 +5,22 @@ import {
   StyleSheet,
   PanResponder,
   View,
+  Dimensions,
 } from 'react-native';
+
+const {
+  width: screenWidth,
+} = Dimensions.get('window');
 
 class Butter extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      animShow: new Animated.Value(0),
-      animToasting: new Animated.Value(0),
-      animHide: new Animated.Value(0),
       panResponder: PanResponder
         .create(
           {
             onStartShouldSetPanResponder: this.onStartShouldSetPanResponder,
-            onPanResponderGrant: this.onPanResponderGrant,
+            onMoveShouldSetPanResponder: this.onMoveShouldSetPanResponder,
             onPanResponderMove: this.onPanResponderMove,
             onPanResponderRelease: this.onPanResponderRelease,
             onPanResponderTerminate: this.onPanResponderTerminate,
@@ -36,15 +38,18 @@ class Butter extends React.Component {
     const { requestDrag } = this.props;
     return requestDrag();
   };
-  onPanResponderGrant = (e, gestureState) => {
+  onMoveShouldSetPanResponder = (e, gestureState) => {
+    const { requestDrag } = this.props;
+    return requestDrag();
   };
   onPanResponderMove = (e, gestureState) => {
     const { animDrag } = this.state;
+    const { dx } = gestureState;
     return Animated.event(
       [
         null,
         {
-          dx: animDrag.x,
+          dx: dx > 0 ? animDrag.x : 0,
           dy: 0,
           useNativeDriver: true,
         }
@@ -55,8 +60,54 @@ class Butter extends React.Component {
     );
   };
   onPanResponderRelease = (e, gestureState) => {
+    const { finishDrag } = this.props;
+    const { dx } = gestureState;
+    const shouldConsume = dx > (screenWidth * 0.25);
+    return this.handleFinishDrag(
+      e,
+      gestureState,
+      shouldConsume,
+    );
   };
   onPanResponderTerminate = (e, gestureState) => {
+    return this.handleFinishDrag(
+      e,
+      gestureState,
+      false,
+    );
+  };
+  handleFinishDrag = (e, gestureState, shouldConsume) => {
+    const { finishDrag } = this.props;
+    const { animDrag } = this.state;
+    if (shouldConsume) {
+      return Promise
+        .resolve()
+        .then(
+          () => finishDrag(
+            true,
+          ),
+        );
+    }
+    return new Promise(
+      resolve => Animated
+        .timing(
+          animDrag,
+          {
+            toValue: {
+              x: 0,
+              y: 0,
+            },
+            useNativeDriver: true,
+            duration: 100,
+          },
+        )
+        .start(resolve),
+    )
+      .then(
+        () => finishDrag(
+          false,
+        ),
+      );
   };
   render() {
     const {
@@ -66,9 +117,6 @@ class Butter extends React.Component {
       ...extraProps
     } = this.props;
     const {
-      animShow,
-      animToasting,
-      animHide,
       animDrag,
       panResponder,
       ...extraState
