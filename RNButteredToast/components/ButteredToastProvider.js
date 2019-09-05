@@ -67,6 +67,9 @@ class ButteredToastProvider extends React.Component {
   static hasLayout = (width, height) => (
     width !== null && height !== null && width !== undefined && height !== undefined && !Number.isNaN(width) && !Number.isNaN(height)
   );
+  static hasLifespan = lifespan => (
+    lifespan !== null && lifespan !== undefined && !Number.isNaN(lifespan) && lifespan >= 0
+  );
   state = {
     children: [],
     animValues: [],
@@ -323,6 +326,7 @@ class ButteredToastProvider extends React.Component {
                 y: height,
               },
             );
+          const animLifespan = ButteredToastProvider.hasLifespan(lifespan) ? new Animated.Value(0) : null;
           const toastId = uuidv4();
           return new Promise(
             resolve => this.setState(
@@ -335,6 +339,7 @@ class ButteredToastProvider extends React.Component {
                     animValue={animValue}
                   >
                     <Bread
+                      animLifespan={animLifespan}
                       consumeToast={() => this.consumeToast(
                         toastId,
                       )}
@@ -346,6 +351,8 @@ class ButteredToastProvider extends React.Component {
                           duration,
                           easing,
                           lifespan,
+                          animLifespan,
+                          toastId,
                         },
                       )}
                     />
@@ -365,7 +372,7 @@ class ButteredToastProvider extends React.Component {
         },
       )
       .then(
-        ({ width, height, animValue, duration, easing, lifespan }) => new Promise(
+        ({ width, height, animValue, duration, easing, lifespan, animLifespan, toastId }) => new Promise(
           resolve => this.setState(
             {
               dimensions: [
@@ -382,13 +389,15 @@ class ButteredToastProvider extends React.Component {
                 duration,
                 easing,
                 lifespan,
+                animLifespan,
+                toastId,
               },
             )
           ),
         ),
       )
       .then(
-        ({ animValue, duration, easing, lifespan }) => {
+        ({ animValue, duration, easing, lifespan, animLifespan, toastId }) => {
           const {
             paddingBottom,
             paddingRight,
@@ -443,13 +452,33 @@ class ButteredToastProvider extends React.Component {
               ]
                 .filter(e => !!e),
             )
-              .start(() => resolve(lifespan)),
+              .start(() => resolve({ lifespan, animLifespan, toastId })),
           );
         },
       )
       .then(
-        (lifespan) => {
+        ({ lifespan, animLifespan, toastId }) => {
           const { uuids } = this.state;
+          const doesHaveLifespan = ButteredToastProvider.hasLifespan(
+            lifespan,
+          );
+          // XXX: Schedule a deletion.
+          if (doesHaveLifespan) {
+            Animated
+              .timing(
+                animLifespan,
+                {
+                  duration: lifespan,
+                  toValue: 1,
+                  useNativeDriver: true,
+                },
+              )
+              .start(
+                () => this.consumeToast(
+                  toastId,
+                ),
+              );
+          }
           return uuids[uuids.length - 1];
         },
       );

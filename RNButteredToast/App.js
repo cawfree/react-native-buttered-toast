@@ -16,6 +16,7 @@ import {
   StatusBar,
   Alert,
   TouchableOpacity,
+  Animated,
 } from 'react-native';
 
 import {
@@ -53,6 +54,21 @@ const GreenBread = ({ consumeToast, ...extraProps }) => (
   />
 );
 
+const AutoConsumingBread = ({ animLifespan, ...extraProps }) => (
+  <Animated.View
+    {...extraProps}
+    style={{
+      opacity: Animated.subtract(
+        1,
+        animLifespan,
+      ),
+      width: 200,
+      height: 300,
+      backgroundColor: 'orange',
+    }}
+  />
+);
+
 class App extends React.Component {
   componentDidMount() {
     const {
@@ -63,7 +79,7 @@ class App extends React.Component {
       RedBread,
     )
       .then(() => makeToast(
-        GreenBread,
+        AutoConsumingBread,
         {
           lifespan: 3000,
         },
