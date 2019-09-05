@@ -28,6 +28,7 @@ const makeOptions = {
   easing: Easing.bounce,
   // XXX: By default, toasts must be dismissed.
   lifespan: -1,
+  dismissable: false,
 };
 
 const consumeOptions = {
@@ -79,6 +80,7 @@ class ButteredToastProvider extends React.Component {
     uuids: [],
     processing: false,
     pendingTasks: [],
+    dragging: false,
   };
   processPendingTasks = (extraTask) => {
     const { 
@@ -284,6 +286,9 @@ class ButteredToastProvider extends React.Component {
       shouldConsumeToast,
     );
   };
+  requestDrag = (toastId) => {
+    return true;
+  };
   makeToast = (Bread, options = makeOptions) => {
     const shouldMakeToast = () => Promise
       .resolve()
@@ -317,6 +322,7 @@ class ButteredToastProvider extends React.Component {
           duration,
           easing,
           lifespan,
+          dismissable,
         }) => {
           const { height } = this.state;
           const animValue = new Animated
@@ -328,6 +334,14 @@ class ButteredToastProvider extends React.Component {
             );
           const animLifespan = ButteredToastProvider.hasLifespan(lifespan) ? new Animated.Value(0) : null;
           const toastId = uuidv4();
+          const shouldRequestDrag = () => {
+            if (dismissable) {
+              return this.requestDrag(
+                toastId,
+              );
+            }
+            return false;
+          };
           return new Promise(
             resolve => this.setState(
               {
@@ -337,6 +351,7 @@ class ButteredToastProvider extends React.Component {
                     key={`${this.state.children.length}`}
                     containerStyle={containerStyle}
                     animValue={animValue}
+                    requestDrag={shouldRequestDrag}
                   >
                     <Bread
                       animLifespan={animLifespan}

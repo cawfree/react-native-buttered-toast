@@ -149,6 +149,9 @@ class App extends React.Component {
           description="A simple, configurable manager for your toast notifications. Any arbitrary React component can be displayed as a notification."
         />
       ),
+      {
+        dismissable: true,
+      },
     );
     makeToast(
       InputToast,
