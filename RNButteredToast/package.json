@@ -20,6 +20,7 @@
     "eslint": "^6.3.0",
     "jest": "^24.9.0",
     "metro-react-native-babel-preset": "^0.56.0",
+    "react-doc-generator": "^1.2.5",
     "react-test-renderer": "16.8.6"
   },
   "jest": {

@@ -97,6 +97,30 @@ export default ({ ...extraProps }) => {
 
 ## 📌 Props
 
+### `ButteredToastProvider`
+
+Property | Type | Required | Default value | Description
+:--- | :--- | :--- | :--- | :---
+paddingBottom|number|no|30| Spacing to apply to the bottom of the toasts.
+paddingRight|number|no|10| Spacing to apply to the right of the toasts.
+paddingBetween|number|no|10| Spacing to apply between successive toasts.
+duration|number|no|500| Default amount of time to automatically consume (hide) a toast.
+easing|func|no|Easing.bounce| Easing function when automatically consuming a toast.
+-----
+
+### `makeToast` Options
+
+The `makeToast` prop injected by the `ButteredToastProvider` accepts a React Element as the first argument, and an `options` argument as the last. These options default to:
+
+```javascript
+{
+  containerStyle: styles.containerStyle, // An empty styles object.
+  duration: 1200,
+  easing: Easing.bounce,
+  lifespan: -1, // Must be dismissed.
+  dismissable: true,
+}
+```
 
 ## ✌️ License
 [MIT](https://opensource.org/licenses/MIT)

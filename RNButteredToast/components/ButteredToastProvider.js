@@ -28,7 +28,7 @@ const makeOptions = {
   easing: Easing.bounce,
   // XXX: By default, toasts must be dismissed.
   lifespan: -1,
-  dismissable: false,
+  dismissable: true,
 };
 
 const consumeOptions = {
