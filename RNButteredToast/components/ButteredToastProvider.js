@@ -135,158 +135,157 @@ class ButteredToastProvider extends React.Component {
     );
   };
   consumeToast = (toastId, options = consumeOptions) => {
-    const shouldConsumeToast = () => Promise
-      .resolve()
-      .then(
-        () => mergeDeep(
-          { ...consumeOptions },
-          options || {},
-        ),
-      )
-      .then(
-        ({ duration, easing }) => {
-          const { uuids } = this.state;
-          const index = uuids
-            .indexOf(
-              toastId,
-            );
-          if (index < 0) {
-            return Promise
-              .reject(
-                new Error(
-                  `Attempted to consume unrecognized toastId "${JSON.stringify(
-                    toastId,
-                  )}".`,
-                ),
-              );
-          }
-          return {
-            index,
-            duration,
-            easing,
-          };
-        },
-      )
-      .then(
-        ({ index, duration, easing }) => {
-          const {
-            paddingRight,
-            paddingBottom,
-            paddingBetween,
-          } = this.props;
-          const {
-            width,
-            height,
-            children,
-            animValues,
-            dimensions,
-            uuids,
-          } = this.state;
-          const animValue = animValues[index];
-          const {
-            width: viewWidth,
-            height: viewHeight,
-          } = dimensions[index];
-          const y = dimensions
-            .filter((_, i) => i > index)
-            .reduce(
-              (n, { height }) => (
-                (height + n) + paddingBetween
-              ),
-              paddingBottom,
-            );
-          const { dismissRight } = options;
-          return new Promise(
-            resolve => Animated
-              .timing(
-                animValue,
-                {
-                  toValue: {
-                    x: (dismissRight ? 1 : -1) * width,
-                    y: (height - y) - viewHeight,
-                  },
-                  duration,
-                  easing,
-                  useNativeDriver: true,
-                },
-              )
-              .start(resolve),
-          )
-            .then(() => index);
-        },
-      )
-      .then(
-        (index) => new Promise(
-          resolve => this.setState(
-            {
-               children: this.state.children
-                 .filter((_, i) => i !== index),
-               animValues: this.state.animValues
-                 .filter((_, i) => i !== index),
-               dimensions: this.state.dimensions
-                 .filter((_, i) => i !== index),
-               uuids: this.state.uuids
-                 .filter((_, i) => i !== index),
-            },
-            resolve,
+    const { uuids } = this.state;
+    if (uuids.indexOf(toastId) >= 0) {
+      const shouldConsumeToast = () => Promise
+        .resolve()
+        .then(
+          () => mergeDeep(
+            { ...consumeOptions },
+            options || {},
           ),
-        ),
-      )
-      .then(
-        () => {
-          const {
-            paddingRight,
-            paddingBottom,
-            paddingBetween,
-            duration,
-            easing,
-          } = this.props;
-          const {
-            width,
-            animValues,
-            dimensions,
-            height,
-          } = this.state;
-          const targets = dimensions
-            .slice()
-            .reverse()
-            .reduce(
-              (arr, { height }, i) => (
-                [
-                  ...arr,
-                  ((arr[i - 1] || (-1 * paddingBottom)) - height) - ((!!arr[i - 1]) ? paddingBetween : 0),
-                ]
-              ),
-              [],
+        )
+        .then(
+          ({ duration, easing }) => {
+            const { uuids } = this.state;
+            const index = uuids
+              .indexOf(
+                toastId,
+              );
+            return {
+              index,
+              duration,
+              easing,
+            };
+          },
+        )
+        .then(
+          ({ index, duration, easing }) => {
+            const {
+              paddingRight,
+              paddingBottom,
+              paddingBetween,
+            } = this.props;
+            const {
+              width,
+              height,
+              children,
+              animValues,
+              dimensions,
+              uuids,
+            } = this.state;
+            const animValue = animValues[index];
+            const {
+              width: viewWidth,
+              height: viewHeight,
+            } = dimensions[index];
+            const y = dimensions
+              .filter((_, i) => i > index)
+              .reduce(
+                (n, { height }) => (
+                  (height + n) + paddingBetween
+                ),
+                paddingBottom,
+              );
+            const { dismissRight } = options;
+            return new Promise(
+              resolve => Animated
+                .timing(
+                  animValue,
+                  {
+                    toValue: {
+                      x: (dismissRight ? 1 : -1) * width,
+                      y: (height - y) - viewHeight,
+                    },
+                    duration,
+                    easing,
+                    useNativeDriver: true,
+                  },
+                )
+                .start(resolve),
             )
-            .reverse();
-          return new Promise(
-            resolve => Animated
-              .parallel(
-                [
-                  ...animValues
-                    .map(
-                      (animValue, i) => Animated.timing(
-                        animValue,
-                        {
-                          toValue: {
-                            x: width - (dimensions[i].width + paddingRight),
-                            y: targets[i] + height,
-                          },
-                          duration,
-                          useNativeDriver: true,
-                          easing,
-                        },
-                      ),
-                    ),
-                ],
+              .then(() => index);
+          },
+        )
+        .then(
+          (index) => new Promise(
+            resolve => this.setState(
+              {
+                 children: this.state.children
+                   .filter((_, i) => i !== index),
+                 animValues: this.state.animValues
+                   .filter((_, i) => i !== index),
+                 dimensions: this.state.dimensions
+                   .filter((_, i) => i !== index),
+                 uuids: this.state.uuids
+                   .filter((_, i) => i !== index),
+              },
+              resolve,
+            ),
+          ),
+        )
+        .then(
+          () => {
+            const {
+              paddingRight,
+              paddingBottom,
+              paddingBetween,
+              duration,
+              easing,
+            } = this.props;
+            const {
+              width,
+              animValues,
+              dimensions,
+              height,
+            } = this.state;
+            const targets = dimensions
+              .slice()
+              .reverse()
+              .reduce(
+                (arr, { height }, i) => (
+                  [
+                    ...arr,
+                    ((arr[i - 1] || (-1 * paddingBottom)) - height) - ((!!arr[i - 1]) ? paddingBetween : 0),
+                  ]
+                ),
+                [],
               )
-              .start(resolve),
-          );
-        },
+              .reverse();
+            return new Promise(
+              resolve => Animated
+                .parallel(
+                  [
+                    ...animValues
+                      .map(
+                        (animValue, i) => Animated.timing(
+                          animValue,
+                          {
+                            toValue: {
+                              x: width - (dimensions[i].width + paddingRight),
+                              y: targets[i] + height,
+                            },
+                            duration,
+                            useNativeDriver: true,
+                            easing,
+                          },
+                        ),
+                      ),
+                  ],
+                )
+                .start(resolve),
+            );
+          },
+        );
+      return this.processPendingTasks(
+        shouldConsumeToast,
       );
+    }
+    console.warn(
+      `Ignoring request to consumeToast "${toastId}".`,
+    );
     return this.processPendingTasks(
-      shouldConsumeToast,
+      null,
     );
   };
   requestDrag = (toastId) => {
