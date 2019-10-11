@@ -34,6 +34,7 @@ const makeOptions = {
 const consumeOptions = {
   duration: 500,
   easing: Easing.cubic,
+  dismissRight: true,
 };
 
 const ButteredToastContext = React
@@ -194,13 +195,14 @@ class ButteredToastProvider extends React.Component {
               ),
               paddingBottom,
             );
+          const { dismissRight } = options;
           return new Promise(
             resolve => Animated
               .timing(
                 animValue,
                 {
                   toValue: {
-                    x: width,
+                    x: (dismissRight ? 1 : -1) * width,
                     y: (height - y) - viewHeight,
                   },
                   duration,
@@ -303,7 +305,7 @@ class ButteredToastProvider extends React.Component {
     }
     return allowDrag;
   };
-  finishDrag = (toastId, shouldConsume) => {
+  finishDrag = (toastId, animDrag, shouldConsume) => {
     Object.assign(
       this.state,
       {
@@ -311,9 +313,13 @@ class ButteredToastProvider extends React.Component {
       },
     );
     if (shouldConsume) {
+      const { x } = animDrag
+        .__getValue();
       return this.consumeToast(
         toastId,
-        null, // TODO: some dismiss options
+        {
+          dismissRight: (x > 0),
+        },
       );
     }
     return this.processPendingTasks(
@@ -366,8 +372,9 @@ class ButteredToastProvider extends React.Component {
           const animLifespan = ButteredToastProvider.hasLifespan(lifespan) ? new Animated.Value(0) : null;
           const toastId = uuidv4();
           const shouldRequestDrag = () => (!!dismissable) && this.requestDrag(toastId);
-          const shouldFinishDrag = shouldConsume => this.finishDrag(
+          const shouldFinishDrag = (animDrag, shouldConsume) => this.finishDrag(
             toastId,
+            animDrag,
             shouldConsume,
           );
           return new Promise(

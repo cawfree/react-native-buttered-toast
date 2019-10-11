@@ -48,7 +48,7 @@ class Butter extends React.Component {
       [
         null,
         {
-          dx: dx > 0 ? animDrag.x : 0,
+          dx: animDrag.x,
           dy: 0,
           useNativeDriver: true,
         }
@@ -59,9 +59,9 @@ class Butter extends React.Component {
     );
   };
   onPanResponderRelease = (e, gestureState) => {
-    const { finishDrag } = this.props;
     const { dx } = gestureState;
-    const shouldConsume = dx > (screenWidth * 0.25);
+    // TODO: Should be a prop.
+    const shouldConsume = Math.abs(dx) > (screenWidth * 0.25);
     return this.handleFinishDrag(
       e,
       gestureState,
@@ -83,6 +83,7 @@ class Butter extends React.Component {
         .resolve()
         .then(
           () => finishDrag(
+            animDrag,
             true,
           ),
         );
@@ -97,13 +98,14 @@ class Butter extends React.Component {
               y: 0,
             },
             useNativeDriver: true,
-            duration: 100,
+            duration: 100, // TODO: must be a function of distance
           },
         )
         .start(resolve),
     )
       .then(
         () => finishDrag(
+          animDrag,
           false,
         ),
       );
