@@ -525,9 +525,17 @@ class ButteredToastProvider extends React.Component {
                 },
               )
               .start(
-                () => this.consumeToast(
-                  toastId,
-                ),
+                () => {
+                  const { uuids } = this.state;
+                  // XXX: Verify the toast is still active.
+                  if (uuids.indexOf(toastId) >= 0) {
+                    return this.consumeToast(
+                      toastId,
+                    );
+                  }
+                  return Promise
+                    .resolve();
+                },
               );
           }
           return uuids[uuids.length - 1];

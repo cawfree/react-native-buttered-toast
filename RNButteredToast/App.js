@@ -140,6 +140,8 @@ class App extends React.Component {
       makeToast,
       consumeToast,
     } = this.props;
+    Promise
+      .resolve()
     makeToast(
       ({ ...extraProps }) => (
         <NotificationBread
@@ -159,9 +161,17 @@ class App extends React.Component {
       .then(() => makeToast(
         ProgressToast,
         {
-          lifespan: 1000,
+          lifespan: 10000,
+          dismissable: true,
         },
-      ));
+      ))
+      .then(() => makeToast(
+        ProgressToast,
+        {
+          lifespan: 10000,
+          dismissable: true,
+        },
+      ))
   }
   render() {
     return (
